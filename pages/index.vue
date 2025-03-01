@@ -184,10 +184,7 @@ const showScrollButton = ref(false);
 
 // Check authentication and redirect accordingly
 onMounted(async () => {
-  if (await authStore.checkAuth()) {
-    router.push('/dashboard');
-  }
-  // Don't redirect to login anymore - we want to show the landing page
+  await authStore.checkAuth();
   
   // Add scroll event listener
   window.addEventListener('scroll', handleScroll);
