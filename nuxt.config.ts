@@ -1,5 +1,25 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from "@tailwindcss/vite"
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: true }
+  devtools: { enabled: true },
+  modules: [
+    '@pinia/nuxt',
+  ],
+  css: [
+    '@/assets/css/main.css',
+  ],
+  postcss: {
+    plugins: {
+      autoprefixer: {},
+    },
+  },
+  vite: {
+    plugins: [tailwindcss()],
+  },
+  runtimeConfig: {
+    jwtSecret: process.env.JWT_SECRET,
+    claudeApiKey: process.env.CLAUDE_API_KEY,
+  }
 })
