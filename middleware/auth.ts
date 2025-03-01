@@ -1,31 +1,29 @@
 import { useAuthStore } from '~/stores/auth';
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
+  // Skip auth check on server side
+  if (typeof window === 'undefined') return;
+
   const authStore = useAuthStore();
   
-  // Skip auth check for index page
+  // First check auth state before any logic
+  const isAuthenticated = await authStore.checkAuth();
+
+  // Always allow access to index page
   if (to.path === '/') return;
 
-  // Check if user is authenticated
-  const isAuthenticated = await authStore.checkAuth();
-  
-  // If route requires admin role, check if user is admin
-  if (to.meta.requiresAdmin && (!isAuthenticated || !authStore.isAdmin)) {
-    return navigateTo('/login', { redirectCode: 301 });
-  }
-  
-  // Specifically protect the admin page
-  if (to.path === '/admin' && (!isAuthenticated || !authStore.isAdmin)) {
-    return navigateTo('/dashboard');
-  }
-  
-  // If route requires authentication and user is not authenticated, redirect to login
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    return navigateTo('/login', { redirectCode: 301 });
-  }
-  
-  // If user is authenticated and trying to access login/register pages, redirect to dashboard
+  // Redirect authenticated users away from auth pages
   if (isAuthenticated && (to.path === '/login' || to.path === '/register')) {
     return navigateTo('/dashboard');
+  }
+
+  // Handle admin routes
+  if (to.meta.requiresAdmin && (!isAuthenticated || !authStore.isAdmin)) {
+    return navigateTo(isAuthenticated ? '/dashboard' : '/login');
+  }
+
+  // Handle protected non-admin routes
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return navigateTo('/login');
   }
 }); 

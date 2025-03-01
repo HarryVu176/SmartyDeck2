@@ -75,7 +75,9 @@ export const useAuthStore = defineStore('auth', {
           this.token = data.token;
           this.user = data.user;
           
-          // Only persist to localStorage on client side
+          // Force checkAuth to validate and update state
+          await this.checkAuth();
+          
           if (typeof window !== 'undefined') {
             localStorage.setItem('authToken', data.token);
           }
@@ -104,7 +106,13 @@ export const useAuthStore = defineStore('auth', {
       // Only run on client side
       if (typeof window === 'undefined') return false;
       
-      // If we already have a token, validate it
+      // Check localStorage first
+      const storedToken = localStorage.getItem('authToken');
+      if (storedToken && !this.token) {
+        this.token = storedToken;
+      }
+
+      // If we have a token, validate it
       if (this.token) {
         try {
           const response = await fetch('/api/auth/me', {
@@ -114,6 +122,8 @@ export const useAuthStore = defineStore('auth', {
           });
           
           if (response.ok) {
+            const data = await response.json();
+            this.user = data.user;
             return true;
           }
         } catch (error) {
@@ -124,6 +134,9 @@ export const useAuthStore = defineStore('auth', {
       // Clear invalid token
       this.token = null;
       this.user = null;
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+      }
       return false;
     },
   },
