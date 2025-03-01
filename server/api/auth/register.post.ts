@@ -39,10 +39,10 @@ export default defineEventHandler(async (event) => {
       });
     }
     
-    if (!inviteCodeDoc.isValid()) {
+    if (!inviteCodeDoc.isValid() || inviteCodeDoc.isUsed) {
       return createError({
         statusCode: 400,
-        message: 'Invite code is expired or has reached maximum uses'
+        message: 'Invite code is not valid'
       });
     }
     
