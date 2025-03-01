@@ -130,7 +130,7 @@ async function importModels() {
 
 // Connect to database
 async function connectToDatabase() {
-  const MONGO_URI = process.env.MONGO_URI || 'mongodb://admin:password@localhost:27017/SmartyDeck2?authSource=admin';
+  const MONGO_URI = process.env.MONGO_URI;
 
   if (!MONGO_URI) {
     throw new Error('Please define the MONGO_URI environment variable');
@@ -138,9 +138,10 @@ async function connectToDatabase() {
 
   try {
     await mongoose.connect(MONGO_URI, {
-      authSource: 'admin',
-      user: process.env.MONGO_USER,
-      pass: process.env.MONGO_PASSWORD,
+      dbName: process.env.MONGO_DB,
+      // authSource: 'admin',
+      // user: process.env.MONGO_USER,
+      // pass: process.env.MONGO_PASSWORD,
     });
     console.log('Connected to MongoDB');
     return mongoose.connection;

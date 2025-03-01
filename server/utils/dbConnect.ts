@@ -22,9 +22,9 @@ export async function connectToDatabase() {
   try {
     const db = await mongoose.connect(MONGO_URI, {
       dbName: config.mongoDB,
-      authSource: 'admin',
-      user: config.mongoUser,
-      pass: config.mongoPassword,
+    //   authSource: 'admin',
+    //   user: config.mongoUser,
+    //   pass: config.mongoPassword,
     });
     
     isConnected = true;
