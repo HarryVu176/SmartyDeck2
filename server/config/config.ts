@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables from the .env file
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
 
 const config = {
   port: process.env.PORT || 3000,
@@ -15,7 +15,7 @@ const config = {
   mongoDB: process.env.MONGO_DB,
   mongoUser: process.env.MONGO_USER,
   mongoPassword: process.env.MONGO_PASSWORD,
-  jwtSecret: process.env.JWT_SECRET,
+  jwtSecret: process.env.JWT_SECRET || 'smd2',
   claudeApiKey: process.env.CLAUDE_API_KEY,
 };
 

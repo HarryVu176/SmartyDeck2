@@ -1,6 +1,7 @@
 import { connectToDatabase } from '~/server/utils/dbConnect';
 import User from '~/server/models/User';
 import jwt from 'jsonwebtoken';
+import config from '~/server/config/config';
 
 export default defineEventHandler(async (event) => {
   try {
@@ -46,7 +47,7 @@ export default defineEventHandler(async (event) => {
         email: user.email,
         role: user.role 
       },
-      process.env.JWT_SECRET || 'your-secret-key',
+      config.jwtSecret,
       { expiresIn: '7d' }
     );
     

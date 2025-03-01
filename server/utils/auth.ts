@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { H3Event } from 'h3';
 import User from '~/server/models/User';
+import config from '../config/config';
 
 // Interface for decoded JWT token
 interface DecodedToken {
@@ -29,7 +30,7 @@ export const verifyToken = async (event: H3Event) => {
     // Verify token
     const decoded = jwt.verify(
       token, 
-      process.env.JWT_SECRET || 'your-secret-key'
+      config.jwtSecret
     ) as DecodedToken;
     
     // Check if user exists

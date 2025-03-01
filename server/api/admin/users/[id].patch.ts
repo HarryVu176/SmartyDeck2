@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     
     await connectToDatabase();
     
-    const id = event.context.params.id;
+    const id = event.context.params?.id;
     const updates = await readBody(event);
     
     // Get the user to update
@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
         lastLogin: user.lastLogin
       }
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating user:', error);
     return createError({
       statusCode: error.statusCode || 500,

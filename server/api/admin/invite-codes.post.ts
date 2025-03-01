@@ -63,6 +63,7 @@ export default defineEventHandler(async (event) => {
       }
       
       const inviteCodeData = {
+        code: customCode ? customCode : undefined,
         createdBy: user.userId,
         expiresAt,
         maxUses // 0 means unlimited
@@ -87,7 +88,7 @@ export default defineEventHandler(async (event) => {
       success: true,
       inviteCodes
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating invite codes:', error);
     return createError({
       statusCode: error.statusCode || 500,

@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     
     await connectToDatabase();
     
-    const inviteCodeId = event.context.params.id;
+    const inviteCodeId = event.context.params?.id;
     
     // Get users who used this invite code
     const users = await User.find({ inviteCode: inviteCodeId })
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
       success: true,
       users
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching users for invite code:', error);
     return createError({
       statusCode: error.statusCode || 500,

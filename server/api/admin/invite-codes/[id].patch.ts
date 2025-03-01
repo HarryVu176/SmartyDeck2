@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     
     await connectToDatabase();
     
-    const id = event.context.params.id;
+    const id = event.context.params?.id;
     const updates = await readBody(event);
     
     // Update the invite code
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
       success: true,
       inviteCode
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating invite code:', error);
     return createError({
       statusCode: error.statusCode || 500,

@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     
     await connectToDatabase();
     
-    const id = event.context.params.id;
+    const id = event.context.params?.id;
     
     // Get the invite code
     const inviteCode = await InviteCode.findById(id)
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
       success: true,
       inviteCode
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching invite code:', error);
     return createError({
       statusCode: error.statusCode || 500,
