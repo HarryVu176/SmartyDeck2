@@ -484,7 +484,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useAuthStore } from '~/stores/auth';
 import { useRouter } from 'vue-router';
 
@@ -857,6 +857,25 @@ const toggleUserStatus = async (userId, isExpired) => {
     alert(error.message);
   }
 };
+
+// Add this inside the setup script
+onMounted(async () => {
+  // Fetch initial data based on current tab
+  if (currentTab.value === 'invite-codes') {
+    await fetchInviteCodes();
+  } else if (currentTab.value === 'users') {
+    await fetchUsers();
+  }
+});
+
+// Add a watcher for tab changes
+watch(currentTab, async (newTab) => {
+  if (newTab === 'invite-codes') {
+    await fetchInviteCodes();
+  } else if (newTab === 'users') {
+    await fetchUsers();
+  }
+});
 
 definePageMeta({
   middleware: 'auth',
