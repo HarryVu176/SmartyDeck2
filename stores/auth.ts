@@ -71,19 +71,21 @@ export const useAuthStore = defineStore('auth', {
 
         const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(data.message || 'Login failed');
+        if (response.ok) {
+          this.token = data.token;
+          this.user = data.user;
+          
+          // Only persist to localStorage on client side
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('authToken', data.token);
+          }
+          return true;
         }
-
-        this.user = data.user;
-        this.token = data.token;
-
-        // Store token in localStorage for persistence
-        localStorage.setItem('auth_token', data.token);
-
-        return true;
-      } catch (error: any) {
-        this.error = error.message;
+        
+        this.error = data.message || 'Login failed';
+        return false;
+      } catch (error) {
+        this.error = 'Network error';
         return false;
       } finally {
         this.loading = false;
@@ -91,39 +93,38 @@ export const useAuthStore = defineStore('auth', {
     },
 
     logout() {
-      this.user = null;
       this.token = null;
-      localStorage.removeItem('auth_token');
+      this.user = null;
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('authToken');
+      }
     },
 
     async checkAuth() {
-      const token = localStorage.getItem('auth_token');
-
-      if (!token) {
-        return false;
-      }
-
-      this.token = token;
-
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Session expired');
+      // Only run on client side
+      if (typeof window === 'undefined') return false;
+      
+      // If we already have a token, validate it
+      if (this.token) {
+        try {
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${this.token}`
+            }
+          });
+          
+          if (response.ok) {
+            return true;
+          }
+        } catch (error) {
+          console.error('Auth check failed:', error);
         }
-
-        const data = await response.json();
-        this.user = data.user;
-
-        return true;
-      } catch (error) {
-        this.logout();
-        return false;
       }
+
+      // Clear invalid token
+      this.token = null;
+      this.user = null;
+      return false;
     },
   },
 });

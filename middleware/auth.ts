@@ -3,12 +3,15 @@ import { useAuthStore } from '~/stores/auth';
 export default defineNuxtRouteMiddleware(async (to, from) => {
   const authStore = useAuthStore();
   
+  // Skip auth check for index page
+  if (to.path === '/') return;
+
   // Check if user is authenticated
   const isAuthenticated = await authStore.checkAuth();
   
   // If route requires admin role, check if user is admin
   if (to.meta.requiresAdmin && (!isAuthenticated || !authStore.isAdmin)) {
-    return navigateTo('/login');
+    return navigateTo('/login', { redirectCode: 301 });
   }
   
   // Specifically protect the admin page
@@ -18,7 +21,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   
   // If route requires authentication and user is not authenticated, redirect to login
   if (to.meta.requiresAuth && !isAuthenticated) {
-    return navigateTo('/login');
+    return navigateTo('/login', { redirectCode: 301 });
   }
   
   // If user is authenticated and trying to access login/register pages, redirect to dashboard

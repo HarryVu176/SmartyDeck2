@@ -72,22 +72,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useAuthStore } from '~/stores/auth';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-// Check if user is authenticated
-onMounted(async () => {
-  if (!(await authStore.checkAuth())) {
-    router.push('/login');
-  }
-});
-
 const logout = () => {
   authStore.logout();
   router.push('/login');
 };
+
+definePageMeta({
+  middleware: 'auth',
+  requiresAuth: true
+});
 </script> 

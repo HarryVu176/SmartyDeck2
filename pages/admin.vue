@@ -491,23 +491,6 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const authStore = useAuthStore();
 
-// Check if user is authenticated and is admin
-onMounted(async () => {
-  if (!(await authStore.checkAuth())) {
-    router.push('/login');
-    return;
-  }
-  
-  if (!authStore.isAdmin) {
-    router.push('/dashboard');
-    return;
-  }
-  
-  // Load initial data
-  fetchInviteCodes();
-  fetchUsers();
-});
-
 // Tabs
 const tabs = [
   { id: 'invite-codes', name: 'Invite Codes' },
@@ -874,4 +857,9 @@ const toggleUserStatus = async (userId, isExpired) => {
     alert(error.message);
   }
 };
+
+definePageMeta({
+  middleware: 'auth',
+  requiresAdmin: true
+});
 </script>
