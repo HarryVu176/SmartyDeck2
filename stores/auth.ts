@@ -75,9 +75,6 @@ export const useAuthStore = defineStore('auth', {
           this.token = data.token;
           this.user = data.user;
           
-          // Force checkAuth to validate and update state
-          await this.checkAuth();
-          
           if (typeof window !== 'undefined') {
             localStorage.setItem('authToken', data.token);
           }
@@ -108,7 +105,7 @@ export const useAuthStore = defineStore('auth', {
       
       // Check localStorage first
       const storedToken = localStorage.getItem('authToken');
-      if (storedToken && !this.token) {
+      if (storedToken) {
         this.token = storedToken;
       }
 
