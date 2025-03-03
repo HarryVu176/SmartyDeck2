@@ -154,7 +154,10 @@ IMPORTANT NOTES:
 4. All questions must have an explanation field.
 5. Return ONLY the JSON object as specified, with no additional text or markdown formatting.
 
-Ensure all questions are based on the provided content, encourage broad understanding, and are factually accurate. Again, Return ONLY the JSON object as specified, with no additional text or markdown formatting.`;
+OUTPUT REQUIREMENTS:
+1. The output is a valid JSON object.
+2. There is no text or formatting outside of the JSON structure.
+3. Return ONLY the JSON object as specified, with no additional text or markdown formatting.`;
 
   return prompt;
 }
