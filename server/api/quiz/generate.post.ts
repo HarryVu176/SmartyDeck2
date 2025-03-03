@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     }
     
     // Validate content length
-    if (content.length < 50) {
+    if (content.length < 25) {
       return createError({
         statusCode: 400,
         message: 'Content is too short. Please provide more text for quiz generation.'
@@ -42,10 +42,10 @@ export default defineEventHandler(async (event) => {
     // Calculate total questions
     const totalQuestions = Object.values(questionCounts).reduce((sum: number, count: number) => sum + count, 0);
     
-    if (totalQuestions <= 0 || totalQuestions > 50) {
+    if (totalQuestions <= 0 || totalQuestions > 25) {
       return createError({
         statusCode: 400,
-        message: 'Total questions must be between 1 and 50'
+        message: 'Total questions must be between 1 and 25'
       });
     }
     

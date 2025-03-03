@@ -64,7 +64,7 @@
               <div class="mb-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-3">Number of Questions</h3>
                 <p class="text-sm text-gray-500 mb-4">
-                  Specify how many questions of each type you want. Maximum 50 questions total.
+                  Specify how many questions of each type you want. Maximum 25 questions total.
                   <span class="font-medium">Current total: {{ totalQuestions }}</span>
                 </p>
                 
@@ -78,15 +78,15 @@
                       v-model.number="questionCounts[type.id]"
                       type="number"
                       min="0"
-                      max="50"
+                      max="25"
                       :disabled="!selectedQuestionTypes.includes(type.id)"
                       class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-1/2 sm:text-sm border-gray-300 rounded-md"
                     />
                   </div>
                 </div>
                 
-                <div v-if="totalQuestions > 50" class="mt-2 text-sm text-red-600">
-                  Total questions cannot exceed 50. Please reduce the number of questions.
+                <div v-if="totalQuestions > 25" class="mt-2 text-sm text-red-600">
+                  Total questions cannot exceed 25. Please reduce the number of questions.
                 </div>
               </div>
               
@@ -524,7 +524,7 @@ const isFormValid = computed(() => {
   return quizContent.value.trim().length > 0 && 
          selectedQuestionTypes.value.length > 0 && 
          totalQuestions.value > 0 && 
-         totalQuestions.value <= 50;
+         totalQuestions.value <= 25;
 });
 
 // Helper function to get question type name

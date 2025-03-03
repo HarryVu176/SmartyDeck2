@@ -16,8 +16,8 @@ export async function generateQuizWithClaude(options: QuizGenerationOptions) {
     // Calculate total questions
     const totalQuestions = Object.values(questionCounts).reduce((sum, count) => sum + count, 0);
     
-    if (totalQuestions <= 0 || totalQuestions > 50) {
-      throw new Error('Total questions must be between 1 and 50');
+    if (totalQuestions <= 0 || totalQuestions > 25) {
+      throw new Error('Total questions must be between 1 and 25');
     }
     
     // Build the prompt for Claude
@@ -31,7 +31,7 @@ export async function generateQuizWithClaude(options: QuizGenerationOptions) {
     // Call Claude API
     const response = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219',
-      max_tokens: 4000,
+      max_tokens: 8192,
       messages: [
         {
           role: 'user',
