@@ -60,53 +60,74 @@ function buildQuizGenerationPrompt(
   questionCounts: Record<string, number>,
   instructions?: string
 ): string {
-  let prompt = `Please create a comprehensive quiz based on the following content. Analyze the content carefully and generate diverse, engaging questions that test understanding at different levels.
-  
-Content:
-"""
-${content}
-"""
-
-Generate the following question types:
-`;
-
-  // Add question types and counts
+  // Format question types and counts
+  let questionTypesAndCounts = '';
   questionTypes.forEach(type => {
     const formattedType = type === 'multiple_choice' ? 'Multiple Choice' :
                           type === 'multi_select' ? 'Multi-Select' :
                           type === 'true_false' ? 'True/False' :
                           type === 'matching' ? 'Matching' : type;
     
-    prompt += `- ${formattedType}: ${questionCounts[type]} questions\n`;
+    questionTypesAndCounts += `- ${formattedType}: ${questionCounts[type]} questions\n`;
   });
   
-  // Add custom instructions if provided
-  if (instructions) {
-    prompt += `\nAdditional instructions: ${instructions}\n`;
-  }
-  
-  prompt += `\nGuidelines for question creation:
-1. Create a variety of questions with different difficulty levels (easy, medium, hard)
-2. If the content contains code examples:
-   - Include questions about the code's output
-   - Ask about what happens if certain parts of the code were modified
-   - Test understanding of the concepts demonstrated in the code
-   - Include questions about potential errors or edge cases
-3. For theoretical content:
-   - Test factual recall
-   - Test conceptual understanding
-   - Include application questions where appropriate
-4. Ensure questions are directly based on the provided content
-5. Make sure all questions have clear, unambiguous answers
-6. Provide detailed explanations for all answers
+  let prompt = `You are an expert quiz creator tasked with generating a comprehensive quiz based on provided content. Your goal is to create diverse, engaging questions that test understanding at different levels, focusing on broad knowledge and conceptual understanding rather than specific recall.
+
+Here is the content on which to base the quiz:
+
+<content>
+${content}
+</content>
+
+Please generate the following question types and counts:
+
+<question_types_and_counts>
+${questionTypesAndCounts}
+</question_types_and_counts>
+
+Additional instructions:
+
+<additional_instructions>
+${instructions || 'No additional instructions provided.'}
+</additional_instructions>
+
+Before creating the quiz, analyze the content and plan your approach inside <content_analysis> tags:
+
+1. Identify the main concepts and themes in the content.
+2. List potential misconceptions or common errors related to each main concept.
+3. Consider how these concepts can be applied or extended beyond the specific examples given.
+4. Brainstorm potential real-world applications or scenarios for each main concept.
+5. Identify any underlying principles or theories that the content is based on.
+6. Consider how different elements of the content might be connected or interrelated.
+7. Note any key terms, definitions, or formulas that are crucial to understanding the content.
+8. Identify areas where the content could be extended or where additional research questions might arise.
+
+Now, create the quiz questions following these guidelines:
+
+1. Create a variety of questions with different difficulty levels (easy, medium, hard).
+2. Focus on testing conceptual understanding and application of knowledge rather than mere factual recall.
+3. If the content contains code examples:
+   - Include questions about the code's output or behavior.
+   - Ask about what happens if certain parts of the code were modified.
+   - Test understanding of the underlying principles demonstrated in the code.
+   - Include questions about potential errors, edge cases, or alternative implementations.
+4. For theoretical content:
+   - Test understanding of core concepts and their relationships.
+   - Include questions that require applying concepts to new situations.
+   - Ask about potential implications or consequences of the ideas presented.
+5. Ensure questions are based on the provided content but encourage broader thinking.
+6. Make sure all questions have clear, unambiguous answers.
+7. Provide detailed explanations for all answers, focusing on the reasoning and conceptual understanding.
 
 Specific guidelines for each question type:
-- Multiple Choice: Create questions with 4-5 options where only one is correct. Make distractors plausible.
-- Multi-Select: Create questions where 2-3 options are correct out of 5-6 total options.
-- True/False: Create clear statements that are definitively true or false based on the content. For True/False questions, the correctAnswer must be exactly "True" or "False" (case sensitive).
-- Matching: Create 4-6 items to be matched with their corresponding pairs.
+
+- Multiple Choice: Create questions with 4-5 options where only one is correct. Make distractors plausible and related to common misconceptions or partial understandings.
+- Multi-Select: Create questions where 2-3 options are correct out of 5-6 total options. Ensure options test different aspects of the concept.
+- True/False: Create clear statements that are definitively true or false based on the content, focusing on key principles or implications. The correctAnswer must be exactly "True" or "False" (case sensitive).
+- Matching: Create 4-6 items to be matched with their corresponding pairs, focusing on relationships between concepts or elements.
 
 Format the quiz as a JSON object with the following structure:
+
 {
   "questions": [
     {
@@ -133,7 +154,7 @@ IMPORTANT NOTES:
 4. All questions must have an explanation field.
 5. Return ONLY the JSON object as specified, with no additional text or markdown formatting.
 
-Make sure all questions are directly based on the provided content and are factually accurate.`;
+Ensure all questions are based on the provided content, encourage broad understanding, and are factually accurate. Again, Return ONLY the JSON object as specified, with no additional text or markdown formatting.`;
 
   return prompt;
 }
