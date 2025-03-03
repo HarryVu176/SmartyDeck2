@@ -12,6 +12,7 @@ interface AuthState {
   token: string | null;
   loading: boolean;
   error: string | null;
+  lastChecked: number | null; // Add timestamp for last auth check
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -20,6 +21,7 @@ export const useAuthStore = defineStore('auth', {
     token: null,
     loading: false,
     error: null,
+    lastChecked: null,
   }),
 
   getters: {
@@ -74,9 +76,13 @@ export const useAuthStore = defineStore('auth', {
         if (response.ok) {
           this.token = data.token;
           this.user = data.user;
+          this.lastChecked = Date.now();
           
           if (typeof window !== 'undefined') {
             localStorage.setItem('authToken', data.token);
+            // Also store user data to avoid unnecessary API calls
+            localStorage.setItem('authUser', JSON.stringify(data.user));
+            localStorage.setItem('authLastChecked', String(this.lastChecked));
           }
           return true;
         }
@@ -94,8 +100,11 @@ export const useAuthStore = defineStore('auth', {
     logout() {
       this.token = null;
       this.user = null;
+      this.lastChecked = null;
       if (typeof window !== 'undefined') {
         localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+        localStorage.removeItem('authLastChecked');
       }
     },
 
@@ -103,14 +112,38 @@ export const useAuthStore = defineStore('auth', {
       // Only run on client side
       if (typeof window === 'undefined') return false;
       
-      // Check localStorage first
-      const storedToken = localStorage.getItem('authToken');
-      if (storedToken) {
-        this.token = storedToken;
+      // Check if we already have a token in the store
+      if (!this.token) {
+        // Try to get from localStorage
+        const storedToken = localStorage.getItem('authToken');
+        const storedUser = localStorage.getItem('authUser');
+        const storedLastChecked = localStorage.getItem('authLastChecked');
+        
+        if (storedToken) {
+          this.token = storedToken;
+          
+          // If we have stored user data and it's recent (less than 5 minutes old),
+          // use it instead of making an API call
+          if (storedUser && storedLastChecked) {
+            const lastChecked = Number(storedLastChecked);
+            const now = Date.now();
+            const fiveMinutes = 5 * 60 * 1000;
+            
+            if (now - lastChecked < fiveMinutes) {
+              this.user = JSON.parse(storedUser);
+              this.lastChecked = lastChecked;
+              return true;
+            }
+          }
+        } else {
+          // No token found, user is not authenticated
+          return false;
+        }
       }
 
-      // If we have a token, validate it
-      if (this.token) {
+      // If we have a token but no user data or it's been a while since we last checked,
+      // validate the token with the server
+      if (this.token && (!this.user || !this.lastChecked || Date.now() - this.lastChecked > 5 * 60 * 1000)) {
         try {
           const response = await fetch('/api/auth/me', {
             headers: {
@@ -121,20 +154,27 @@ export const useAuthStore = defineStore('auth', {
           if (response.ok) {
             const data = await response.json();
             this.user = data.user;
+            this.lastChecked = Date.now();
+            
+            // Update localStorage
+            localStorage.setItem('authUser', JSON.stringify(this.user));
+            localStorage.setItem('authLastChecked', String(this.lastChecked));
+            
             return true;
+          } else {
+            // Token is invalid, clear auth state
+            this.logout();
+            return false;
           }
         } catch (error) {
           console.error('Auth check failed:', error);
+          // Don't logout on network errors to prevent logout on temporary connectivity issues
+          return !!this.user;
         }
       }
 
-      // Clear invalid token
-      this.token = null;
-      this.user = null;
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('authToken');
-      }
-      return false;
+      // If we have both token and user data, and we checked recently, consider authenticated
+      return !!this.token && !!this.user;
     },
   },
 });

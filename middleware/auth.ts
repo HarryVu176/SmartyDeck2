@@ -6,7 +6,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   const authStore = useAuthStore();
   
-  // First check auth state before any logic
+  // Check auth state before any logic
   const isAuthenticated = await authStore.checkAuth();
 
   // Always allow access to index page
@@ -26,4 +26,4 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   if (to.meta.requiresAuth && !isAuthenticated) {
     return navigateTo('/login');
   }
-}); 
+});

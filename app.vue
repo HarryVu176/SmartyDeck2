@@ -6,8 +6,18 @@
 </template>
 
 <script setup>
-// Apply auth middleware globally
-useNuxtApp().hook('page:start', () => {
-  // This will run on every page navigation
+import { useAuthStore } from '~/stores/auth';
+
+// Apply auth check globally
+const authStore = useAuthStore();
+
+// This will run once when the app is initialized
+onMounted(async () => {
+  await authStore.checkAuth();
+});
+
+// This will run on every page navigation
+useNuxtApp().hook('page:start', async () => {
+  await authStore.checkAuth();
 });
 </script>
