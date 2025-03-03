@@ -14,21 +14,33 @@ const matchingItemSchema = new mongoose.Schema({
 
 // Schema for quiz questions
 const questionSchema = new mongoose.Schema({
+  id: String,
   type: {
     type: String,
     enum: ['multiple_choice', 'multi_select', 'true_false', 'matching'],
     required: true
   },
+  difficulty: {
+    type: String,
+    enum: ['easy', 'medium', 'hard'],
+    default: 'medium'
+  },
   question: {
     type: String,
     required: true
   },
-  options: [optionSchema],
+  options: {
+    type: [String], // Changed from [optionSchema] to [String]
+    default: undefined
+  },
   correctAnswer: String, // For multiple choice and true/false
   correctAnswers: [String], // For multi-select
-  matches: [matchingItemSchema], // For matching questions
+  matches: {
+    type: [matchingItemSchema],
+    default: undefined
+  }, // For matching questions
   explanation: String
-}, { _id: true });
+}, { _id: false }); // Set _id to false to prevent MongoDB from adding _id to each question
 
 // Main quiz schema
 const quizSchema = new mongoose.Schema({
@@ -58,4 +70,4 @@ const quizSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-export default mongoose.models.Quiz || mongoose.model('Quiz', quizSchema); 
+export default mongoose.models.Quiz || mongoose.model('Quiz', quizSchema);
