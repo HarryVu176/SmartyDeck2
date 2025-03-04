@@ -1,23 +1,82 @@
 <template>
   <div class="min-h-screen bg-gray-100">
     <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <div class="flex items-center">
-          <NuxtLink 
-            v-if="authStore.isAdmin"
-            to="/admin" 
-            class="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Admin Panel
-          </NuxtLink>
-          <span class="mr-4">Welcome, {{ authStore.user?.username }}</span>
-          <button 
-            @click="logout" 
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Logout
-          </button>
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+          
+          <!-- Mobile menu button -->
+          <div class="flex md:hidden">
+            <button 
+              @click="mobileMenuOpen = !mobileMenuOpen" 
+              type="button" 
+              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+              aria-controls="mobile-menu"
+              :aria-expanded="mobileMenuOpen"
+            >
+              <span class="sr-only">Toggle menu</span>
+              <svg 
+                v-if="!mobileMenuOpen"
+                class="block h-6 w-6" 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg 
+                v-else
+                class="block h-6 w-6" 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Desktop menu -->
+          <div class="hidden md:flex md:items-center">
+            <NuxtLink 
+              v-if="authStore.isAdmin"
+              to="/admin" 
+              class="mr-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Admin Panel
+            </NuxtLink>
+            <span class="mr-4">Welcome, {{ authStore.user?.username }}</span>
+            <button 
+              @click="logout" 
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div v-if="mobileMenuOpen" class="pt-2 pb-3 space-y-2 md:hidden">
+          <div class="flex flex-col space-y-2">
+            <span class="block px-3 py-2 text-base font-medium text-gray-700">
+              Welcome, {{ authStore.user?.username }}
+            </span>
+            <NuxtLink 
+              v-if="authStore.isAdmin"
+              to="/admin" 
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+            >
+              Admin Panel
+            </NuxtLink>
+            <button 
+              @click="logout" 
+              class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </header>
@@ -142,6 +201,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const mobileMenuOpen = ref(false);
 
 const loading = ref(true);
 const recentActivity = ref([]);
