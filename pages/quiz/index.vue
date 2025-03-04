@@ -148,30 +148,34 @@
                 </div>
                 
                 <div class="mt-6 flex space-x-3">
-                <button
+                  <button
                     @click="practiceQuiz(quiz._id)"
                     class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
+                  >
                     Practice
-                </button>
-                <button
+                  </button>
+                  <button
                     @click="viewQuiz(quiz._id)"
                     class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
+                  >
                     View
-                </button>
-                <button
-                    @click="editQuiz(quiz._id)"
+                  </button>
+                  <button
+                    v-if="quiz.isPublic"
+                    @click="shareQuiz(quiz._id)"
                     class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                    Edit
-                </button>
-                <button
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    Share
+                  </button>
+                  <button
                     @click="deleteQuiz(quiz._id)"
-                    class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                >
+                    class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
                     Delete
-                </button>
+                  </button>
                 </div>
               </div>
             </div>
@@ -323,6 +327,51 @@ const deleteQuiz = async (quizId) => {
     console.error('Error deleting quiz:', error);
     alert(error.message || 'An error occurred while deleting the quiz');
   }
+};
+
+const shareQuiz = (quizId) => {
+  const shareUrl = `${window.location.origin}/quiz/view/${quizId}`;
+  
+  // Check if the browser supports the Web Share API
+  if (navigator.share) {
+    navigator.share({
+      title: 'Check out this quiz!',
+      url: shareUrl
+    }).catch(error => {
+      console.error('Error sharing:', error);
+      // Fallback to clipboard copy
+      copyToClipboard(shareUrl);
+    });
+  } else {
+    // Fallback to clipboard copy
+    copyToClipboard(shareUrl);
+  }
+};
+
+// Helper function to copy to clipboard
+const copyToClipboard = (text) => {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      alert('Share link copied to clipboard!');
+    })
+    .catch(err => {
+      console.error('Failed to copy: ', err);
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        alert('Share link copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy link. The share URL is: ' + text);
+      }
+      document.body.removeChild(textarea);
+    });
 };
 
 definePageMeta({

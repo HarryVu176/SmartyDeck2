@@ -48,7 +48,7 @@ export default defineEventHandler(async (event) => {
         role: user.role 
       },
       config.jwtSecret,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' }
     );
     
     // Return user info and token

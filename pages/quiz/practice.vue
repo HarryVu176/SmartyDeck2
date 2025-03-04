@@ -61,6 +61,20 @@
                 This quiz has {{ quiz.questions.length }} questions.
                 Take your time and good luck!
               </p>
+              
+              <!-- Add shuffle option -->
+              <div class="flex items-center justify-center mb-4">
+                <input
+                  id="shuffle-questions"
+                  v-model="shuffleQuestions"
+                  type="checkbox"
+                  class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                />
+                <label for="shuffle-questions" class="ml-2 block text-sm text-gray-700">
+                  Shuffle questions
+                </label>
+              </div>
+              
               <button 
                 @click="startQuiz"
                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -347,7 +361,6 @@
                       >
                         <span class="flex-shrink-0 h-5 w-5 flex items-center justify-center mr-2">
                           <svg v-if="'False' === question.correctAnswer" class="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            // pages/quiz/practice.vue (continued)
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                           </svg>
                           <svg v-else-if="'False' === userAnswers[index] && 'False' !== question.correctAnswer" class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -445,6 +458,8 @@ const startTime = ref(null);
 const endTime = ref(null);
 const elapsedTime = ref(0);
 const timerInterval = ref(null);
+const shuffleQuestions = ref(false);
+const originalQuestions = ref([]);
 
 // Check authentication
 onMounted(async () => {
@@ -516,13 +531,31 @@ const initializeUserAnswers = () => {
 
 // Start the quiz
 const startQuiz = () => {
-  quizState.value = 'in-progress';
-  startTime.value = new Date();
+  // Store original questions order
+  originalQuestions.value = [...quiz.value.questions];
   
-  // Start timer
+  // Shuffle questions if option is selected
+  if (shuffleQuestions.value) {
+    quiz.value.questions = [...quiz.value.questions].sort(() => Math.random() - 0.5);
+  }
+  
+  // Initialize user answers array
+  userAnswers.value = quiz.value.questions.map(q => {
+    if (q.type === 'multi_select') return [];
+    if (q.type === 'matching') {
+      return q.matches.reduce((acc, match) => {
+        acc[match.item] = '';
+        return acc;
+      }, {});
+    }
+    return '';
+  });
+  
+  // Start the quiz
+  quizState.value = 'in-progress';
+  startTime.value = Date.now();
   timerInterval.value = setInterval(() => {
-    const now = new Date();
-    elapsedTime.value = Math.floor((now - startTime.value) / 1000);
+    elapsedTime.value = Math.floor((Date.now() - startTime.value) / 1000);
   }, 1000);
 };
 
@@ -542,19 +575,31 @@ const nextQuestion = () => {
 
 // Finish the quiz
 const finishQuiz = () => {
-  // Stop timer
-  if (timerInterval.value) {
-    clearInterval(timerInterval.value);
-  }
-  
-  endTime.value = new Date();
+  clearInterval(timerInterval.value);
   quizState.value = 'completed';
   
-  // Calculate final elapsed time
-  elapsedTime.value = Math.floor((endTime.value - startTime.value) / 1000);
+  // Calculate results
+  calculateResults();
   
-  // Save quiz results to API
-  saveQuizResults();
+  // If questions were shuffled, restore original order for review
+  if (shuffleQuestions.value) {
+    // Create a mapping of question IDs to user answers
+    const answerMap = {};
+    quiz.value.questions.forEach((q, i) => {
+      answerMap[q.id] = userAnswers.value[i];
+    });
+    
+    // Restore original question order
+    quiz.value.questions = originalQuestions.value;
+    
+    // Remap user answers to match original order
+    userAnswers.value = quiz.value.questions.map(q => answerMap[q.id]);
+  }
+  
+  // Save results if user is authenticated
+  if (authStore.isAuthenticated) {
+    saveQuizResults();
+  }
 };
 
 // Save quiz results

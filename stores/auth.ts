@@ -13,6 +13,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   lastChecked: number | null; // Add timestamp for last auth check
+  refreshing: boolean; // Add flag to track token refresh status
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -22,6 +23,7 @@ export const useAuthStore = defineStore('auth', {
     loading: false,
     error: null,
     lastChecked: null,
+    refreshing: false,
   }),
 
   getters: {
@@ -108,6 +110,49 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    async refreshToken() {
+      // Prevent multiple simultaneous refresh attempts
+      if (this.refreshing) return false;
+      
+      this.refreshing = true;
+      
+      try {
+        // Call the refresh token endpoint
+        const response = await fetch('/api/auth/refresh', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Update token and user data
+          this.token = data.token;
+          this.user = data.user;
+          this.lastChecked = Date.now();
+          
+          // Update localStorage
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('authUser', JSON.stringify(this.user));
+          localStorage.setItem('authLastChecked', String(this.lastChecked));
+          
+          return true;
+        } else {
+          // If refresh fails, we need to redirect to login
+          this.logout();
+          this.error = 'Your session has expired. Please log in again.';
+          return false;
+        }
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+        return false;
+      } finally {
+        this.refreshing = false;
+      }
+    },
+
     async checkAuth() {
       // Only run on client side
       if (typeof window === 'undefined') return false;
@@ -176,5 +221,53 @@ export const useAuthStore = defineStore('auth', {
       // If we have both token and user data, and we checked recently, consider authenticated
       return !!this.token && !!this.user;
     },
+    
+    // Helper method to make authenticated API requests with token refresh
+    async fetchWithAuth(url: string, options: RequestInit = {}) {
+      // Ensure we have a valid token
+      const isAuthenticated = await this.checkAuth();
+      if (!isAuthenticated) {
+        throw new Error('Not authenticated');
+      }
+      
+      // Add authorization header
+      const headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${this.token}`
+      };
+      
+      try {
+        // Make the request
+        const response = await fetch(url, {
+          ...options,
+          headers
+        });
+        
+        // If unauthorized, try to refresh token and retry once
+        if (response.status === 401) {
+          const refreshed = await this.refreshToken();
+          if (refreshed) {
+            // Retry with new token
+            const retryResponse = await fetch(url, {
+              ...options,
+              headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${this.token}`
+              }
+            });
+            
+            return retryResponse;
+          } else {
+            // If refresh failed, throw error
+            throw new Error('Session expired');
+          }
+        }
+        
+        return response;
+      } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+      }
+    }
   },
 });
