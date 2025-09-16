@@ -30,7 +30,7 @@ export async function generateQuizWithClaude(options: QuizGenerationOptions) {
     
     // Call Claude API
     const response = await anthropic.messages.create({
-      model: 'claude-3-7-sonnet-20250219',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 8192,
       messages: [
         {
@@ -105,7 +105,7 @@ Before creating the quiz, analyze the content and plan your approach inside <con
 Now, create the quiz questions following these guidelines:
 
 1. Create a variety of questions with different difficulty levels (easy, medium, hard).
-2. Focus on testing conceptual understanding and application of knowledge rather than mere factual recall.
+2. FOCUS ON TESTING CONCEPTUAL UNDERSTANDING AND APPLICATION OF KNOWLEDGE RATHER THAN MERE FACTUAL RECALL.
 3. If the content contains code examples:
    - Include questions about the code's output or behavior.
    - Ask about what happens if certain parts of the code were modified.
@@ -115,7 +115,7 @@ Now, create the quiz questions following these guidelines:
    - Test understanding of core concepts and their relationships.
    - Include questions that require applying concepts to new situations.
    - Ask about potential implications or consequences of the ideas presented.
-5. Ensure questions are based on the provided content but encourage broader thinking.
+5. ENSURE QUESTIONS ARE BASED ON THE PROVIDED CONTENT BUT ENCOURAGE BROADER THINKING.
 6. Make sure all questions have clear, unambiguous answers.
 7. Provide detailed explanations for all answers, focusing on the reasoning and conceptual understanding.
 
