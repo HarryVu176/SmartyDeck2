@@ -30,8 +30,8 @@ export async function generateQuizWithClaude(options: QuizGenerationOptions) {
     
     // Call Claude API
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8192,
+      model: 'claude-sonnet-4-5',
+      max_tokens: 16384,
       messages: [
         {
           role: 'user',
